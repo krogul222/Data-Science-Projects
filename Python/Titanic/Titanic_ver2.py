@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from ggplot import *
 
+from collections import Counter
+
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -76,11 +78,6 @@ for i in indexNaNAge :
     else :
         dataset['Age'].iloc[i] = ageMed
 
-#CABIN
-dataset["Cabin"] = pd.Series([i[0] if not pd.isnull(i) else 'NODATA' for i in dataset['Cabin']])
-g = sns.countplot(dataset["Cabin"])
-plt.show()
-
 #EMBARKED
 dataset['Embarked'].value_counts().plot(kind='bar')
 plt.xlabel("Embarked")
@@ -94,6 +91,35 @@ dataset["Embarked"] = dataset["Embarked"].map({"S": 0, "Q":1, "C": 2})
 
 #Fare
 dataset['Fare'].fillna(dataset['Fare'].median(), inplace = True)
+
+#FEATURE ANALYSIS
+
+#Age
+ageBins = (0, 10, 18, 30, 60, 120)
+ageGroups = ['Child', 'Teenager','Young Adult', 'Adult', 'Senior']
+ageCategories = pd.cut(dataset['Age'], ageBins, labels=ageGroups)
+dataset['Age'] = ageCategories
+g = sns.factorplot(x = "Age", y = "Survived", data = dataset, kind = "bar")
+g = g.set_ylabels("Survival Probability")
+plt.show()
+dataset['Age'] = dataset['Age'].map({"Child": 0, "Teenager":1, "Young Adult": 2, 'Adult': 3, 'Senior': 4 })
+
+#Fare"
+g = sns.kdeplot(train["Fare"][(train["Survived"] == 0) & (train["Fare"].notnull())], color="Red", shade = True)
+g = sns.kdeplot(train["Fare"][(train["Survived"] == 1) & (train["Fare"].notnull())], color="Blue", shade= True)
+g.set_xlabel("Fare")
+g.set_ylabel("Frequency")
+g = g.legend(["Not Survived","Survived"])
+plt.show()
+
+fareBins = (0, 8, 17, 25, 50, 1000)
+fareGroups = ['VeryLow', 'Low','Average', 'High', 'VeryHigh']
+fareCategories = pd.cut(dataset['Fare'], fareBins, labels=fareGroups)
+dataset['Fare'] = fareCategories
+g = sns.factorplot(x = "Fare", y = "Survived", data = dataset, kind = "bar")
+g = g.set_ylabels("Survival Probability")
+plt.show()
+dataset['Fare'] = dataset['Fare'].map({"VeryLow": 0, "Low":1, "Average": 2, 'High': 3, 'VeryHigh': 4 })
 
 #FEATURE ENGINEERING
 
@@ -116,3 +142,39 @@ g = g.set_xticklabels(["Master", "Miss-Mrs", "Mr", "Rare"])
 g = g.set_ylabels("survival probability")
 plt.show()
 
+#Family size
+dataset["Fsize"] = dataset["SibSp"] + dataset["Parch"] + 1
+g = sns.factorplot(x = "Fsize", y = "Survived", data = dataset, kind = "bar")
+g = g.set_ylabels("Survival Probability")
+plt.show()
+
+#Ticket
+ticketGroupCount = Counter(dataset["Ticket"])
+ticketGroup = [ticketGroupCount.get(i) for i in dataset['Ticket']]
+dataset["TicketSize"] = pd.Series(ticketGroup)
+g = sns.factorplot(x = "TicketSize", y = "Survived", data = dataset, kind = "bar")
+g = g.set_ylabels("survival probability")
+plt.show()
+
+#Groups
+dataset["Group"] = dataset[["Fsize", "TicketSize"]].max(axis=1)
+g = sns.factorplot(x = "Group", y = "Survived", data = dataset, kind = "bar")
+g = g.set_ylabels("Survival Probability")
+plt.show()
+
+#Drop unused data
+dataset.drop(labels = ["Cabin"], axis = 1, inplace = True)
+dataset.drop(labels = ["Fsize"], axis = 1, inplace = True)
+dataset.drop(labels = ["TicketSize"], axis = 1, inplace = True)
+dataset.drop(labels = ["PassengerId"], axis = 1, inplace = True)
+dataset.drop(labels = ["Name"], axis = 1, inplace = True)
+dataset.drop(labels = ["Parch"], axis = 1, inplace = True)
+dataset.drop(labels = ["SibSp"], axis = 1, inplace = True)
+dataset.drop(labels = ["Ticket"], axis = 1, inplace = True)
+dataset.drop(labels = ["Age"], axis = 1, inplace = True)
+dataset.drop(labels = ["Fare"], axis = 1, inplace = True)
+
+#scaling data
+scaler = StandardScaler() # MinMaxScaler()
+#dataset[['SibSp','Parch']] = scaler.fit_transform(dataset[['SibSp','Parch']])
+dataset[['FareBin_Code','AgeBin_Code','Pclass', 'Group']] = scaler.fit_transform(dataset[['FareBin_Code','AgeBin_Code','Pclass', 'Group']])
