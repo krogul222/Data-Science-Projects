@@ -338,7 +338,7 @@ classifiers.append(SVC(random_state=random_state))
 classifiers.append(KNeighborsClassifier())
 classifiers.append(RandomForestClassifier(random_state=random_state))
 classifiers.append(DecisionTreeClassifier(random_state=random_state))
-classifiers.append(GradientBoostingClassifier(random_state=random_+state))
+classifiers.append(GradientBoostingClassifier(random_state=random_state))
 
 cv_results = []
 for classifier in classifiers:

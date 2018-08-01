@@ -10,8 +10,9 @@ from collections import Counter
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier, GradientBoostingClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score, StratifiedKFold, learning_curve
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier
+from sklearn.model_selection import GridSearchCV, cross_val_score, StratifiedKFold, KFold, learning_curve
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
 
 #load train and test dataset
 train = pd.read_csv("train.csv")
@@ -98,11 +99,11 @@ dataset['Fare'].fillna(dataset['Fare'].median(), inplace = True)
 ageBins = (0, 10, 18, 30, 60, 120)
 ageGroups = ['Child', 'Teenager','Young Adult', 'Adult', 'Senior']
 ageCategories = pd.cut(dataset['Age'], ageBins, labels=ageGroups)
-dataset['Age'] = ageCategories
-g = sns.factorplot(x = "Age", y = "Survived", data = dataset, kind = "bar")
+dataset['AgeBinCategories'] = ageCategories
+g = sns.factorplot(x = "AgeBinCategories", y = "Survived", data = dataset, kind = "bar")
 g = g.set_ylabels("Survival Probability")
 plt.show()
-dataset['Age'] = dataset['Age'].map({"Child": 0, "Teenager":1, "Young Adult": 2, 'Adult': 3, 'Senior': 4 })
+dataset['AgeBinCode'] = dataset['AgeBinCategories'].map({"Child": 0, "Teenager":1, "Young Adult": 2, 'Adult': 3, 'Senior': 4 })
 
 #Fare"
 g = sns.kdeplot(train["Fare"][(train["Survived"] == 0) & (train["Fare"].notnull())], color="Red", shade = True)
@@ -112,14 +113,17 @@ g.set_ylabel("Frequency")
 g = g.legend(["Not Survived","Survived"])
 plt.show()
 
-fareBins = (0, 8, 17, 25, 50, 1000)
+fareBins = (-1, 8, 17, 25, 50, 1000)
 fareGroups = ['VeryLow', 'Low','Average', 'High', 'VeryHigh']
 fareCategories = pd.cut(dataset['Fare'], fareBins, labels=fareGroups)
-dataset['Fare'] = fareCategories
-g = sns.factorplot(x = "Fare", y = "Survived", data = dataset, kind = "bar")
+dataset['FareBinCategories'] = fareCategories
+g = sns.factorplot(x = "FareBinCategories", y = "Survived", data = dataset, kind = "bar")
 g = g.set_ylabels("Survival Probability")
 plt.show()
-dataset['Fare'] = dataset['Fare'].map({"VeryLow": 0, "Low":1, "Average": 2, 'High': 3, 'VeryHigh': 4 })
+dataset['FareBinCode'] = dataset['FareBinCategories'].map({"VeryLow": 0, "Low":1, "Average": 2, 'High': 3, 'VeryHigh': 4 })
+
+# convert Sex into categorical value 0 for male and 1 for female
+dataset["Sex"] = dataset["Sex"].map({"male": 0, "female":1})
 
 #FEATURE ENGINEERING
 
@@ -173,8 +177,135 @@ dataset.drop(labels = ["SibSp"], axis = 1, inplace = True)
 dataset.drop(labels = ["Ticket"], axis = 1, inplace = True)
 dataset.drop(labels = ["Age"], axis = 1, inplace = True)
 dataset.drop(labels = ["Fare"], axis = 1, inplace = True)
+dataset.drop(labels = ["AgeBinCategories"], axis = 1, inplace = True)
+dataset.drop(labels = ["FareBinCategories"], axis = 1, inplace = True)
 
 #scaling data
 scaler = StandardScaler() # MinMaxScaler()
-#dataset[['SibSp','Parch']] = scaler.fit_transform(dataset[['SibSp','Parch']])
-dataset[['FareBin_Code','AgeBin_Code','Pclass', 'Group']] = scaler.fit_transform(dataset[['FareBin_Code','AgeBin_Code','Pclass', 'Group']])
+dataset[['FareBinCode','AgeBinCode','Pclass', 'Group']] = scaler.fit_transform(dataset[['FareBinCode','AgeBinCode','Pclass', 'Group']])
+
+#Modelling
+
+#Separate train and data
+train = dataset[:trainLength]
+test = dataset[trainLength:]
+test.drop(labels = ["Survived"], axis = 1, inplace = True)
+
+train["Survived"] = train["Survived"].astype(int)
+Y_train = train["Survived"]
+X_train = train.drop(labels = ["Survived"], axis = 1)
+
+# Cross validate model with Kfold cross val
+kfold = KFold(n_splits=5, random_state=22)
+
+# Modeling step Test differents algorithms 
+random_state = 2
+classifiers = []
+classifiers.append(SVC(random_state=random_state))
+classifiers.append(KNeighborsClassifier())
+classifiers.append(RandomForestClassifier(random_state=random_state))
+classifiers.append(DecisionTreeClassifier(random_state=random_state))
+classifiers.append(ExtraTreesClassifier(random_state=random_state))
+classifiers.append(AdaBoostClassifier(random_state=random_state))
+classifiers.append(GradientBoostingClassifier(random_state=random_state))
+
+cv_results = []
+for classifier in classifiers:
+    cv_results.append(cross_val_score(classifier, X_train, y = Y_train, scoring = "accuracy", cv = kfold, n_jobs = 4))
+
+cv_means = []
+cv_std = []
+for cv_result in cv_results:
+    cv_means.append(cv_result.mean())
+    cv_std.append(cv_result.std())
+
+cv_res = pd.DataFrame({"CrossValMeans" : cv_means, "CrossValerrors": cv_std, "Algorithm" : ["SVC", "KNeighbors", "RandomForest", "DecisionTree", "ExtraTrees", "AdaBoost", "GradientBoosting"]})
+
+g = sns.barplot("CrossValMeans", "Algorithm", data = cv_res, palette="Set3", orient = "h", **{'xerr':cv_std})
+g.set_xlabel("Mean Accuracy")
+g = g.set_title("Cross validation scores")
+
+plt.show()
+dataset.info()
+
+#Tuning
+
+#RandomForest tuning
+RFC = RandomForestClassifier()
+
+rf_param_grid = {"max_depth": [None],
+              "max_features": [2, 4, 6, 'auto'],
+              "min_samples_split": [2, 5, 10],
+              "min_samples_leaf": [1, 3, 10],
+              "bootstrap": [True, False],
+              "n_estimators" :[100, 200 ,400],
+              "criterion": ["gini"]}
+
+gsRFC = GridSearchCV(RFC,param_grid = rf_param_grid, cv=kfold, scoring="accuracy", n_jobs= 4, verbose = 1)
+gsRFC.fit(X_train,Y_train)
+RFC_best = gsRFC.best_estimator_
+
+# Best score
+print("Best RF score:\n")
+print(gsRFC.best_score_)
+
+### SVC classifier
+SVMC = SVC(probability=True)
+
+svc_param_grid = {'kernel': ['rbf'], 
+                  'gamma': [ 0.001, 0.01, 0.1, 1],
+                  'C': [1, 10, 50, 100,200,300, 1000]}
+
+gsSVMC = GridSearchCV(SVMC,param_grid = svc_param_grid, cv=kfold, scoring="accuracy", n_jobs=4, verbose = 1)
+gsSVMC.fit(X_train,Y_train)
+SVMC_best = gsSVMC.best_estimator_
+
+# Best score
+print("Best SVMC score:\n")
+print(gsSVMC.best_score_)
+
+# Gradient boosting tunning
+GBC = GradientBoostingClassifier()
+gb_param_grid = {'loss' : ["deviance"],
+              'n_estimators' : [100,200,300, 400],
+              'learning_rate': [0.1, 0.05, 0.01, 0.001],
+              'max_depth': [4, 8],
+              'min_samples_leaf': [100,150],
+              'max_features': [0.3, 0.2, 0.1] 
+              }
+
+gsGBC = GridSearchCV(GBC,param_grid = gb_param_grid, cv=kfold, scoring="accuracy", n_jobs= 4, verbose = 1)
+gsGBC.fit(X_train,Y_train)
+GBC_best = gsGBC.best_estimator_
+
+# Best score
+print("Best Gradient score:\n")
+print(gsGBC.best_score_)
+
+# KNN tunning
+KNN = KNeighborsClassifier()
+knn_param_grid = {'n_neighbors': [1,2,3,4,5,6,7], #default: 5
+            'weights': ['uniform', 'distance'], #default = ‘uniform’
+            'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
+            }
+
+gsKNN = GridSearchCV(KNN,param_grid = knn_param_grid, cv=kfold, scoring="accuracy", n_jobs= 4, verbose = 1)
+gsKNN.fit(X_train,Y_train)
+KNN_best = gsKNN.best_estimator_
+
+# Best score
+print("Best KNN score:\n")
+print(gsKNN.best_score_)
+
+
+#Ensemble modelling
+
+votingC = VotingClassifier(estimators=[('rfc', RFC_best),
+('svc', SVMC_best), ('gbc', GBC_best), ('knn', KNN_best)], voting='hard', n_jobs=1)
+votingC = votingC.fit(X_train, Y_train)
+
+#Prediction
+
+test_Survived = pd.Series(votingC.predict(test), name="Survived")
+results = pd.concat([testID,test_Survived],axis=1)
+results.to_csv("Titanic_ensemble_voting_out.csv",index=False)
