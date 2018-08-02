@@ -76,8 +76,21 @@ According to correlation matrix age is not correlated with sex but it is negativ
 
 I decided to use Parch, SibSp and Pclass features to predict missing age values.
 
-<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/Agemissingvaluescode.png?raw=true"></p>
-<p align = "center"><b>Fig 2.3.1.8</b> Filling missing Age values.</p>
+```python
+## Fill Age with the median age of similar rows according to Pclass, Parch and SibSp
+# Index of NaN age rows
+indexNaNAge = list(dataset["Age"][dataset["Age"].isnull()].index)
+
+for i in indexNaNAge :
+    ageMed = dataset["Age"].median()
+    agePred = dataset["Age"][((dataset['SibSp'] == dataset.iloc[i]["SibSp"])
+     & (dataset['Parch'] == dataset.iloc[i]["Parch"])
+     & (dataset['Pclass'] == dataset.iloc[i]["Pclass"]))].median()
+    if not np.isnan(agePred) :
+        dataset['Age'].iloc[i] = agePred
+    else :
+        dataset['Age'].iloc[i] = ageMed
+```
 
 #### 2.3.2 Cabin
 Cabin field is a source of valuable information – where passenger probably was at the time when Titanic hit an iceberg. However, it has a lot of missing values (over 1000) which can introduce a lot of noise in prediction step. Eventually I decided to exclude this feature from future analysis.
@@ -161,16 +174,202 @@ As you can see there are some differences between charts on Fig 4.2.2 and 4.2.1 
 <p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/GroupSizevsSurvived.png?raw=true"></p>
 <p align = "center"><b>Fig 4.2.3</b> GroupSize vs survival probability.</p>
 
-I decided to go one step further and arrange GroupSize feature into 4 categories:
-
-* Single - groupsize equal to 1 
-* Duo - groupsize equal to 2 
-* MediumSize - groupsize between 3 and 4
-* LargeSize - groupsize between 5 and 15
-
-<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/GroupBins.png?raw=true"></p>
-<p align = "center"><b>Fig 4.2.3</b> GroupSize groups vs survival probability.</p>
-
-It looks like medium size groups had significantly more chances than other groups. On the other hand large gorups and singles had less chances.
+It looks like medium size groups (3,4) had significantly more chances than other groups. On the other hand large gorups and singles had less chances.
 
 ## 5. Modeling
+
+### 5.1 Data preparation
+
+```python
+#Separate train and data
+train = dataset[:trainLength]
+test = dataset[trainLength:]
+test.drop(labels = ["Survived"], axis = 1, inplace = True)
+
+train["Survived"] = train["Survived"].astype(int)
+Y_train = train["Survived"]
+X_train = train.drop(labels = ["Survived"], axis = 1)
+```
+
+### 5.2 Models cross validation
+
+I compared 7 commonly used classifiers and evaluated the mean accuracy of each of them by a kfold cross validation procedure:
+
+* SVC
+* KNN
+* RandomForest
+* Decision Tree
+* Extra Trees
+* AdaBoost
+* Gradient Boosting
+
+```python
+# Cross validate model with Kfold cross val
+kfold = KFold(n_splits=5, random_state=22)
+```
+
+```python
+# Cross validate model with Kfold cross val
+# Modeling step Test different algorithms 
+random_state = 2
+classifiers = []
+classifiers.append(SVC(random_state=random_state))
+classifiers.append(KNeighborsClassifier())
+classifiers.append(RandomForestClassifier(random_state=random_state))
+classifiers.append(DecisionTreeClassifier(random_state=random_state))
+classifiers.append(ExtraTreesClassifier(random_state=random_state))
+classifiers.append(AdaBoostClassifier(random_state=random_state))
+classifiers.append(GradientBoostingClassifier(random_state=random_state))
+
+cv_results = []
+for classifier in classifiers:
+    cv_results.append(cross_val_score(classifier, X_train, y = Y_train, scoring = "accuracy", cv = kfold, n_jobs = 4))
+
+cv_means = []
+cv_std = []
+for cv_result in cv_results:
+    cv_means.append(cv_result.mean())
+    cv_std.append(cv_result.std())
+
+cv_res = pd.DataFrame({"CrossValMeans" : cv_means, "CrossValerrors": cv_std, "Algorithm" : ["SVC", "KNeighbors", "RandomForest", "DecisionTree", "ExtraTrees", "AdaBoost", "GradientBoosting"]})
+
+g = sns.barplot("CrossValMeans", "Algorithm", data = cv_res, palette="Set3", orient = "h", **{'xerr':cv_std})
+g.set_xlabel("Mean Accuracy")
+g = g.set_title("Cross validation scores")
+
+plt.show()
+```
+<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/ModelsPerformance.png?raw=true"></p>
+<p align = "center"><b>Fig 5.2.1</b> Mean models accuracy.</p>
+
+I decided to choose the SVC, RandomForest , KNeighbors and the GradientBoosting classifiers for the ensemble modeling.
+
+### 5.3 Hyperparameter tunning of chosen models
+
+I performed a grid search optimization for classifiers chosen in previous section:
+
+* Random Forest
+    
+```python
+#RandomForest tuning
+RFC = RandomForestClassifier()
+
+rf_param_grid = {"max_depth": [None],
+              "max_features": [2, 4, 6, 'auto'],
+              "min_samples_split": [2, 5, 10],
+              "min_samples_leaf": [1, 3, 10],
+              "bootstrap": [True, False],
+              "n_estimators" :[100, 200 ,400],
+              "criterion": ["gini"]}
+
+gsRFC = GridSearchCV(RFC,param_grid = rf_param_grid, cv=kfold, scoring="accuracy", n_jobs= 4, verbose = 1)
+gsRFC.fit(X_train,Y_train)
+RFC_best = gsRFC.best_estimator_
+
+# Best score
+print("Best RF score:\n")
+print(gsRFC.best_score_)
+```
+
+```python
+Best RF score:
+0.8327721661054994
+```
+
+* SVC
+
+```python
+# SVC tuning
+SVMC = SVC(probability=True)
+
+svc_param_grid = {'kernel': ['rbf'], 
+                  'gamma': [ 0.001, 0.01, 0.1, 1],
+                  'C': [1, 10, 50, 100,200,300, 1000]}
+
+gsSVMC = GridSearchCV(SVMC,param_grid = svc_param_grid, cv=kfold, scoring="accuracy", n_jobs=4, verbose = 1)
+gsSVMC.fit(X_train,Y_train)
+SVMC_best = gsSVMC.best_estimator_
+
+# Best score
+print("Best SVMC score:\n")
+print(gsSVMC.best_score_)
+```
+
+```python
+Best SVMC score:
+0.8338945005611672
+```
+
+* Gradient boosting
+
+```python
+# Gradient boosting tunning
+GBC = GradientBoostingClassifier()
+gb_param_grid = {'loss' : ["deviance"],
+              'n_estimators' : [100,200,300, 400],
+              'learning_rate': [0.1, 0.05, 0.01, 0.001],
+              'max_depth': [4, 8],
+              'min_samples_leaf': [100,150],
+              'max_features': [0.3, 0.2, 0.1] 
+              }
+
+gsGBC = GridSearchCV(GBC,param_grid = gb_param_grid, cv=kfold, scoring="accuracy", n_jobs= 4, verbose = 1)
+gsGBC.fit(X_train,Y_train)
+GBC_best = gsGBC.best_estimator_
+
+# Best score
+print("Best Gradient score:\n")
+print(gsGBC.best_score_)
+```
+
+```python
+Best Gradient score:
+0.8237934904601572
+```
+
+* KNN
+
+```python
+KNN = KNeighborsClassifier()
+knn_param_grid = {'n_neighbors': [1,2,3,4,5,6,7], #default: 5
+            'weights': ['uniform', 'distance'], #default = ‘uniform’
+            'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
+            }
+
+gsKNN = GridSearchCV(KNN,param_grid = knn_param_grid, cv=kfold, scoring="accuracy", n_jobs= 4, verbose = 1)
+gsKNN.fit(X_train,Y_train)
+KNN_best = gsKNN.best_estimator_
+
+# Best score
+print("Best KNN score:\n")
+print(gsKNN.best_score_)
+```
+
+```python
+Best KNN score:
+0.8215488215488216
+```
+
+### 5.4 Ensemble modeling
+
+I choosed a voting classifier to combine the predictions coming from the 4 classifiers. I decided to pass the argument "hard" to the voting parameter so it will by majority rule voting.
+
+```python
+#Ensemble modelling
+
+votingC = VotingClassifier(estimators=[('rfc', RFC_best),
+('svc', SVMC_best), ('gbc', GBC_best), ('knn', KNN_best)], voting='hard', n_jobs=1)
+votingC = votingC.fit(X_train, Y_train)
+```
+
+### 5.5 Prediction
+
+```python
+#Prediction
+
+test_Survived = pd.Series(votingC.predict(test), name="Survived")
+results = pd.concat([testID,test_Survived],axis=1)
+results.to_csv("Titanic_ensemble_voting.csv",index=False)
+```
+
+After submitting results on Kaggle competition i obtained 0.80382 score which classified me on 1,047 place out of 10,365.
