@@ -147,8 +147,8 @@ g = g.set_ylabels("survival probability")
 plt.show()
 
 #Family size
-dataset["Fsize"] = dataset["SibSp"] + dataset["Parch"] + 1
-g = sns.factorplot(x = "Fsize", y = "Survived", data = dataset, kind = "bar")
+dataset["FamilySize"] = dataset["SibSp"] + dataset["Parch"] + 1
+g = sns.factorplot(x = "FamilySize", y = "Survived", data = dataset, kind = "bar")
 g = g.set_ylabels("Survival Probability")
 plt.show()
 
@@ -161,14 +161,14 @@ g = g.set_ylabels("survival probability")
 plt.show()
 
 #Groups
-dataset["Group"] = dataset[["Fsize", "TicketSize"]].max(axis=1)
-g = sns.factorplot(x = "Group", y = "Survived", data = dataset, kind = "bar")
+dataset["GroupSize"] = dataset[["FamilySize", "TicketSize"]].max(axis=1)
+g = sns.factorplot(x = "GroupSize", y = "Survived", data = dataset, kind = "bar")
 g = g.set_ylabels("Survival Probability")
 plt.show()
 
 #Drop unused data
 dataset.drop(labels = ["Cabin"], axis = 1, inplace = True)
-dataset.drop(labels = ["Fsize"], axis = 1, inplace = True)
+dataset.drop(labels = ["FamilySize"], axis = 1, inplace = True)
 dataset.drop(labels = ["TicketSize"], axis = 1, inplace = True)
 dataset.drop(labels = ["PassengerId"], axis = 1, inplace = True)
 dataset.drop(labels = ["Name"], axis = 1, inplace = True)
@@ -181,8 +181,8 @@ dataset.drop(labels = ["AgeBinCategories"], axis = 1, inplace = True)
 dataset.drop(labels = ["FareBinCategories"], axis = 1, inplace = True)
 
 #scaling data
-scaler = StandardScaler() # MinMaxScaler()
-dataset[['FareBinCode','AgeBinCode','Pclass', 'Group']] = scaler.fit_transform(dataset[['FareBinCode','AgeBinCode','Pclass', 'Group']])
+scaler = MinMaxScaler() # StandardScaler() 
+dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupSize','Embarked']] = scaler.fit_transform(dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupSize','Embarked']])
 
 #Modelling
 

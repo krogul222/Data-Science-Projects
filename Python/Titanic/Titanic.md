@@ -93,7 +93,7 @@ There is only 1 missing values so I decided to fill it with median.
 
 ## 3 Feature Analysis
 ### 3.1 Age
-Many machine learning algorithms are known to produce better model by discretizing continous features. Because of that fact I decided to arrange Age feature into 5 groups. I based on data from Fig. 2.3.1.1 and chose following groups:
+Many machine learning algorithms are known to produce better model by discretizing continous features. Because of that fact I decided to arrange Age feature into 5 categories. I based on data from Fig. 2.3.1.1 and chose following categories:
 * Child – age between 0 and 10
 * Teenager - age between 10 and 18
 * Young Adult - age between 18 and 30
@@ -102,6 +102,14 @@ Many machine learning algorithms are known to produce better model by discretizi
 
 <p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/AgeBins.png?raw=true"></p>
 <p align = "center"><b>Fig 3.1.1</b> Age groups vs survival probability.</p>
+
+It looks like children have more chances to survive comparing to other groups and oldest peapole have lowest less chances. It is consistent with common sense. 
+
+### 3.2 Fare
+I decided to discretize Fare feature because of the same reasons I discretized Age feature.
+
+<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/FarevsSurvived_two_on_one.png?raw=true"></p>
+<p align = "center"><b>Fig 3.2.1</b> Fare distribution vs Survived. Two distributions in one plot.</p>
 
 ## 4 Feature Engineering
 ### 4.1 Title
