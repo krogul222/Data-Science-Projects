@@ -91,7 +91,7 @@ There are only 2 missing values so I decided to fill them with most frequent val
 #### 2.3.4 Fare
 There is only 1 missing values so I decided to fill it with median.
 
-## 3 Feature Analysis
+## 3. Feature Analysis
 ### 3.1 Age
 Many machine learning algorithms are known to produce better model by discretizing continous features. Because of that fact I decided to arrange Age feature into 5 categories. I based on data from Fig. 2.3.1.1 and chose following categories:
 * Child – age between 0 and 10
@@ -128,7 +128,7 @@ Fig 3.2.2 confirms my previous conclusions. People with lower ticket fare had le
 
 I decided to convert Sex feature into categorical with value 0 for male and 1 for female. Similarly I did with Embarked feature with value 0 for S and 1 for Q and 2 for C. I left Pclass feture unchanged. Rest of the features (SibSP, Parch, Name, Ticket) will be used in feature engineering section.
 
-## 4 Feature Engineering
+## 4. Feature Engineering
 ### 4.1 Title
 Name feature despite first and second name includes passenger title. It is interesting to separate title as a feature to see what is survival probability for passengers with different titles.
 There are 17 different titles in the dataset but most of them are very rare. They can be grouped into 4 categories: 
@@ -170,3 +170,7 @@ I decided to go one step further and arrange GroupSize feature into 4 categories
 
 <p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/GroupBins.png?raw=true"></p>
 <p align = "center"><b>Fig 4.2.3</b> GroupSize groups vs survival probability.</p>
+
+It looks like medium size groups had significantly more chances than other groups. On the other hand large gorups and singles had less chances.
+
+## 5. Modeling

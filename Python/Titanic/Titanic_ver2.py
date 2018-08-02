@@ -196,7 +196,7 @@ dataset.drop(labels = ["GroupBinCategories"], axis = 1, inplace = True)
 scaler = MinMaxScaler() # StandardScaler() 
 dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupBinCode','Embarked']] = scaler.fit_transform(dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupBinCode','Embarked']])
 
-#Modelling
+#Modeling
 
 #Separate train and data
 train = dataset[:trainLength]
@@ -208,7 +208,7 @@ Y_train = train["Survived"]
 X_train = train.drop(labels = ["Survived"], axis = 1)
 
 # Cross validate model with Kfold cross val
-kfold = KFold(n_splits=5, random_state=22)
+kfold = KFold(n_splits=10, random_state=22)
 
 # Modeling step Test differents algorithms 
 random_state = 2
