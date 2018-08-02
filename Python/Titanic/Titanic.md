@@ -106,10 +106,23 @@ Many machine learning algorithms are known to produce better model by discretizi
 It looks like children have more chances to survive comparing to other groups and oldest peapole have lowest less chances. It is consistent with common sense. 
 
 ### 3.2 Fare
-I decided to discretize Fare feature because of the same reasons I discretized Age feature.
+I decided to discretize Fare feature because of the same reasons I discretized Age feature. I ploted fare distribution for people who survived the tragedy and who died (Fig 3.2.1).
 
 <p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/FarevsSurvived_two_on_one.png?raw=true"></p>
 <p align = "center"><b>Fig 3.2.1</b> Fare distribution vs Survived. Two distributions in one plot.</p>
+
+There is a clear difference between these two distributions. People who paid small amount for ticket (less than 17) had significantly less chance to survive (red peak). It is consistent with common sense. Low ticket fare is probably connected with low status which can be an obstacle during "selection" who can go on life boat and who can't. I decided to arrange Fare feature into 5 categories:
+
+* VeryLow - fare between 0 and 8 (first half of red peak)
+* Low - fare between 8 and 17 (second half of red peak)
+* Average - fare between 17 and 25
+* High - fare between 25 and 50
+* VeryHigh - fare between 50 and 1000
+
+<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/FareBins.png?raw=true"></p>
+<p align = "center"><b>Fig 3.2.2</b> Fare groups vs survival probability.</p>
+
+Fig 3.2.2 confirms my previous conclusions. People with lower ticket fare had less chance to survive. However, there is not much difference between average and high fare but significant difference between very high fare comparing to other groups. It looks like rich people had more chances to survive, probably because of their status.
 
 ## 4 Feature Engineering
 ### 4.1 Title
