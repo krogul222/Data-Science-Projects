@@ -166,10 +166,21 @@ g = sns.factorplot(x = "GroupSize", y = "Survived", data = dataset, kind = "bar"
 g = g.set_ylabels("Survival Probability")
 plt.show()
 
+GroupBins = (0, 1.5, 2.5, 4.5, 15)
+GroupGroups = ['Single', 'Duo','MediumSize', 'LargeSize']
+GroupCategories = pd.cut(dataset['GroupSize'], GroupBins, labels=GroupGroups)
+dataset['GroupBinCategories'] = GroupCategories
+g = sns.factorplot(x = "GroupBinCategories", y = "Survived", data = dataset, kind = "bar")
+g = g.set_ylabels("Survival Probability")
+plt.show()
+dataset['GroupBinCode'] = dataset['GroupBinCategories'].map({"Single": 0, "Duo":1, "MediumSize": 2, 'LargeSize': 3})
+
+
 #Drop unused data
 dataset.drop(labels = ["Cabin"], axis = 1, inplace = True)
 dataset.drop(labels = ["FamilySize"], axis = 1, inplace = True)
 dataset.drop(labels = ["TicketSize"], axis = 1, inplace = True)
+dataset.drop(labels = ["GroupSize"], axis = 1, inplace = True)
 dataset.drop(labels = ["PassengerId"], axis = 1, inplace = True)
 dataset.drop(labels = ["Name"], axis = 1, inplace = True)
 dataset.drop(labels = ["Parch"], axis = 1, inplace = True)
@@ -179,10 +190,11 @@ dataset.drop(labels = ["Age"], axis = 1, inplace = True)
 dataset.drop(labels = ["Fare"], axis = 1, inplace = True)
 dataset.drop(labels = ["AgeBinCategories"], axis = 1, inplace = True)
 dataset.drop(labels = ["FareBinCategories"], axis = 1, inplace = True)
+dataset.drop(labels = ["GroupBinCategories"], axis = 1, inplace = True)
 
 #scaling data
 scaler = MinMaxScaler() # StandardScaler() 
-dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupSize','Embarked']] = scaler.fit_transform(dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupSize','Embarked']])
+dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupBinCode','Embarked']] = scaler.fit_transform(dataset[['FareBinCode','AgeBinCode','Pclass', 'GroupBinCode','Embarked']])
 
 #Modelling
 

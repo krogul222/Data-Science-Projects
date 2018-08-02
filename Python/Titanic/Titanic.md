@@ -124,6 +124,10 @@ There is a clear difference between these two distributions. People who paid sma
 
 Fig 3.2.2 confirms my previous conclusions. People with lower ticket fare had less chance to survive. However, there is not much difference between average and high fare but significant difference between very high fare comparing to other groups. It looks like rich people had more chances to survive, probably because of their status.
 
+### 3.3 Other Features
+
+I decided to convert Sex feature into categorical with value 0 for male and 1 for female. Similarly I did with Embarked feature with value 0 for S and 1 for Q and 2 for C. I left Pclass feture unchanged. Rest of the features (SibSP, Parch, Name, Ticket) will be used in feature engineering section.
+
 ## 4 Feature Engineering
 ### 4.1 Title
 Name feature despite first and second name includes passenger title. It is interesting to separate title as a feature to see what is survival probability for passengers with different titles.
@@ -141,5 +145,28 @@ There are 17 different titles in the dataset but most of them are very rare. The
 
 It looks like people with rare title had more chance to survive comparing to male with basic title (Mr.).
 
-### 4.2 Family size
+### 4.2 Group size
 It is possible that size of a family had impact on survival probability of passengers. It is not easy to evacuate big family. It is easy to construct family size feature basing on SibSp and Parch features. “Family” value is sum of SibSp, Parch and 1. 
+
+<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/FamilySizevsSurvived.png?raw=true"></p>
+<p align = "center"><b>Fig 4.2.1</b> FamilySize vs survival probability.</p>
+
+It looks like single people and large families had significantly lower chances to survive comparing to other groups. However, people do not travel only with close family (SibSp, Parch). Somtimes they travel with other relatives or just friends. How it can be detected? People who travelled togather on Titanic often had the same ticket number. In this case we can define group of people basing on ticket number.
+
+<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/TicketSizevsSurvived.png?raw=true"></p>
+<p align = "center"><b>Fig 4.2.2</b> TicketSize vs survival probability.</p>
+
+As you can see there are some differences between charts on Fig 4.2.2 and 4.2.1 . I decided to create GroupSize feature basing on TicketSize and FamilySize which is maximum of these to features for each observation.
+
+<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/GroupSizevsSurvived.png?raw=true"></p>
+<p align = "center"><b>Fig 4.2.3</b> GroupSize vs survival probability.</p>
+
+I decided to go one step further and arrange GroupSize feature into 4 categories:
+
+* Single - groupsize equal to 1 
+* Duo - groupsize equal to 2 
+* MediumSize - groupsize between 3 and 4
+* LargeSize - groupsize between 5 and 15
+
+<p align = "center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/GroupBins.png?raw=true"></p>
+<p align = "center"><b>Fig 4.2.3</b> GroupSize groups vs survival probability.</p>
