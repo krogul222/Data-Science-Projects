@@ -6,3 +6,6 @@ When Titanic hit an iceberg a lot of passengers and crew died. In this challenge
 ### 2.1 Data overview
 To take first overview of the data let's explore whole dataset (train and test data joined) using:
 * info() function
+
+<p style="text-align: center;">![Info](https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/Info.png?raw=true)</p>
+<p style="text-align: center;">**Fig 2.1.1** Dataset info.</p>
