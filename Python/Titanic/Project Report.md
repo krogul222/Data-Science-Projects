@@ -372,4 +372,4 @@ results = pd.concat([testID,test_Survived],axis=1)
 results.to_csv("Titanic_ensemble_voting.csv",index=False)
 ```
 
-After submitting results on Kaggle competition i obtained 0.80382 score which classified me on 1,047 place out of 10,365.
+After submitting results on Kaggle competition I obtained 0.80382 score which classified me on 1,047 place out of 10,365.
