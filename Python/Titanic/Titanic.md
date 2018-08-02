@@ -7,15 +7,15 @@ When Titanic hit an iceberg a lot of passengers and crew died. In this challenge
 To take first overview of the data let's explore whole dataset (train and test data joined) using:
 * info() function
 
-<<p align ="center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/Info.png?raw=true"></p>
-<p align ="center"> **Fig 2.1.1** Dataset info. </p>
+<p align ="center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/Info.png?raw=true"></p>
+<p align ="center"> <b>Fig 2.1.1</b> Dataset info. </p>
 
 * sample() function
 
- <p align ="center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/SampleFunctionpart1.png?raw=true"></p>
+<p align ="center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/SampleFunctionpart1.png?raw=true"></p>
  
- <p style="text-align: center;"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/SampleFunctionpart2.png?raw=true"></p>
-<p style="text-align: center;"> **Fig 2.1.2** Ten samples of dataset. </p>
+<p align ="center"><img src="https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/SampleFunctionpart2.png?raw=true"></p>
+<p align ="center"> <b>Fig 2.1.2</b>b> Ten samples of dataset. </p>
 
 * description() function
 <p style="text-align: center;">![Description Function](https://github.com/krogul222/Data-Science-Projects/blob/master/Python/Titanic/img/DescriptionFunctionpart1.png?raw=true)</p>
