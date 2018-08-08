@@ -117,8 +117,8 @@ dataGenerator <- image_data_generator(featurewise_center = FALSE, samplewise_cen
 
 dataGenerator %>% fit_image_data_generator(X_kerasTrain)
 
-history <- model %>% fit_generator(flow_images_from_data(X_kerasTrain, Y_kerasTrain, dataGenerator, batch_size = 100),
-                                   steps_per_epoch = nrow(X_kerasTrain)/100, epochs = 1, callbacks = c(reduceLearningRate), validation_data = list(X_kerasTest, Y_kerasTest) )
+history <- model %>% fit_generator(flow_images_from_data(X_kerasTrain, Y_kerasTrain, dataGenerator, batch_size = 128),
+                                   steps_per_epoch = nrow(X_kerasTrain)/128, epochs = 30, callbacks = c(reduceLearningRate), validation_data = list(X_kerasTest, Y_kerasTest) )
 
 model %>% evaluate(X_kerasTest, Y_kerasTest)
 
