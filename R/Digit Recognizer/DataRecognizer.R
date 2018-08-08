@@ -108,23 +108,25 @@ reduceLearningRate <- callback_reduce_lr_on_plateau(monitor = "val_acc", factor 
 dataGenerator <- image_data_generator(featurewise_center = FALSE, samplewise_center = FALSE,
                      featurewise_std_normalization = FALSE,
                      samplewise_std_normalization = FALSE, zca_whitening = FALSE,
-                     zca_epsilon = 1e-06, rotation_range = 15, width_shift_range = 0.15,
-                     height_shift_range = 0.15, brightness_range = NULL, shear_range = 0,
-                     zoom_range = 0.15, channel_shift_range = 0, fill_mode = "nearest",
+                     zca_epsilon = 1e-06, rotation_range = 15, width_shift_range = 0.1,
+                     height_shift_range = 0.1, brightness_range = NULL, shear_range = 0,
+                     zoom_range = 0.1, channel_shift_range = 0, fill_mode = "nearest",
                      cval = 0, horizontal_flip = FALSE, vertical_flip = FALSE,
                      rescale = NULL, preprocessing_function = NULL, data_format = NULL,
                      validation_split = 0)
 
 dataGenerator %>% fit_image_data_generator(X_kerasTrain)
 
-history <- model %>% fit_generator(flow_images_from_data(X_kerasTrain, Y_kerasTrain, dataGenerator, batch_size = 128),
-                                   steps_per_epoch = nrow(X_kerasTrain)/128, epochs = 1, callbacks = c(reduceLearningRate), validation_data = c(X_kerasTest, Y_kerasTest) )
+history <- model %>% fit_generator(flow_images_from_data(X_kerasTrain, Y_kerasTrain, dataGenerator, batch_size = 100),
+                                   steps_per_epoch = nrow(X_kerasTrain)/100, epochs = 1, callbacks = c(reduceLearningRate), validation_data = list(X_kerasTest, Y_kerasTest) )
 
 model %>% evaluate(X_kerasTest, Y_kerasTest)
 
+saveRDS(model, "./DigitRecognizer.rds")
+
 # reshape
 test <- matrix(as.numeric(unlist(test)),nrow=nrow(test))
-
+dim(test) <- c(nrow(test), 28, 28, 1)
 # rescale
 test <- test / 255
 
