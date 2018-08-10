@@ -11,9 +11,10 @@ server <- function(input, output, session) {
   observeEvent(input$button, {
     if(length(imgAnalysis) == 784){
       res <- model %>% predict_classes(imgAnalysis,batch_size=1)
+      output$PredictedLabel <- renderText("Prediction")
       output$Predicted <- renderText(res)   
     } else {
-      output$Predicted <- renderText("No Data")   
+      output$PredictedLabel <- renderText("No Data")   
     }
   })
 
@@ -23,15 +24,20 @@ server <- function(input, output, session) {
     File <- input$upload   
     
     #catches null exception
-    #if (is.null(File))
-     # return(NULL)
+    if (is.null(File))
+     return(NULL)
     
 #    validate(
 #      need(file_ext(File$name) %in% c(
 #        'image/png', 
 #        'image/jpeg'
 #      ), "Wrong File Format try again!"))
-    
+ 
+    output$Original <- renderText("Original")
+    output$Phase1 <- renderText("Phase 1")
+    output$Phase2 <- renderText("Phase 2")
+    output$Phase3 <- renderText("Phase 3")
+       
     if (length(input$upload$datapath))
       image <- image_read(input$upload$datapath)
     image_data(image)
@@ -88,6 +94,8 @@ server <- function(input, output, session) {
     
     imgAnalysis <<- imgAnalysis/255
     dim(imgAnalysis) <<- c(1, 28, 28, 1)
+    
+    output$Predicted <- renderText("")  
     #res <- model %>% predict_classes(imgAnalysis,batch_size=1)
   })
 }
