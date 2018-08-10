@@ -1,5 +1,6 @@
 suppressMessages(library(lattice))
 suppressMessages(library(ggplot2))
+suppressMessages(library(tfdeploy))
 
 # for describe the data
 suppressMessages(library(psych))
@@ -122,6 +123,7 @@ history <- model %>% fit_generator(flow_images_from_data(X_kerasTrain, Y_kerasTr
 
 model %>% evaluate(X_kerasTest, Y_kerasTest)
 
+export_savedmodel(model, "digitrecognizer")
 saveRDS(model, "./DigitRecognizer.rds")
 
 # reshape
