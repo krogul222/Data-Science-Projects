@@ -5,10 +5,15 @@ ui <- fluidPage(
     
     sidebarPanel(
       fileInput("upload", "Upload new image", accept = c('image/png', 'image/jpeg')),
-      actionButton("button", "Predict"),
+      fluidRow(
+        column(12, align="center",
+      actionButton("button", "Predict")
+      )),
       fluidRow(
         column(width = 6, offset = 0, style='padding:10px;')
       ),
+      fluidRow(
+      column(12, align="center",
       textOutput("PredictedLabel"),
       textOutput("Predicted"),
       tags$head(tags$style("#Predicted{
@@ -23,21 +28,27 @@ ui <- fluidPage(
             #PredictedLabel{color: blue;
                             font-size: 20px;
                             font-style: bold;
-                            }
-                           "))
+                            text-align: center;
+            }
+            #button{
+            display: inline-block;
+            text-align: center;
+            }"))
+      )
+      )
       
     ),
     mainPanel(
       fluidRow(
-        column(6,  textOutput("Original"), imageOutput("img1",height = "220px", width = "220px")),
-        column(6, textOutput("Phase1"), imageOutput("img2",height = "220px", width = "220px"))
+        column(6, align="center", textOutput("Original"), imageOutput("img1",height = "220px", width = "220px")),
+        column(6, align="center", textOutput("Phase1"), imageOutput("img2",height = "220px", width = "220px"))
       ),
       fluidRow(
         column(width = 6, offset = 0, style='padding:10px;')
       ),
       fluidRow(
-        column(6, textOutput("Phase2"), imageOutput("img3",height = "220px", width = "220px")),
-        column(6, textOutput("Phase3"), imageOutput("img4",height = "220px", width = "220px"))
+        column(6, align="center", textOutput("Phase2"), imageOutput("img3",height = "220px", width = "220px")),
+        column(6, align="center", textOutput("Phase3"), imageOutput("img4",height = "220px", width = "220px"))
       ),
       tags$head(tags$style("#Original,#Phase1,#Phase2,#Phase3{color: blue;
                                 font-size: 20px;
@@ -46,7 +57,6 @@ ui <- fluidPage(
                                 #img1,#img2,#img3,#img4{
                                 border: 1px solid black;
                                 vertical-align: middle;
-                                text-align: center;
                                 }            
             "))
      # imageOutput("img")
