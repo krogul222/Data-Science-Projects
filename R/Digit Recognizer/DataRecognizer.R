@@ -10,6 +10,7 @@ suppressMessages(library(caret))
 
 # Keras
 suppressMessages(library(keras))
+suppressMessages(library(kerasR))
 
 # load train and test dataset
 train <- read.csv('train.csv', stringsAsFactors = FALSE, na.strings = c("NA", ""))
@@ -119,12 +120,17 @@ dataGenerator <- image_data_generator(featurewise_center = FALSE, samplewise_cen
 dataGenerator %>% fit_image_data_generator(X_kerasTrain)
 
 history <- model %>% fit_generator(flow_images_from_data(X_kerasTrain, Y_kerasTrain, dataGenerator, batch_size = 128),
-                                   steps_per_epoch = nrow(X_kerasTrain)/128, epochs = 30, callbacks = c(reduceLearningRate), validation_data = list(X_kerasTest, Y_kerasTest) )
+                                   steps_per_epoch = nrow(X_kerasTrain)/128, epochs = 1, callbacks = c(reduceLearningRate), validation_data = list(X_kerasTest, Y_kerasTest) )
 
 model %>% evaluate(X_kerasTest, Y_kerasTest)
 
-export_savedmodel(model, "digitrecognizer")
-saveRDS(model, "./DigitRecognizer.rds")
+export_savedmodel(model, "digitrecognizer2", , remove_learning_phase = FALSE)
+
+save_model_hdf5(model, 'my_model.h5')
+
+# Save entire model to a HDF5 file
+keras_save(model, path = "digitrecognizer.h5")
+#saveRDS(model, "./DigitRecognizer.rds")
 
 # reshape
 test <- matrix(as.numeric(unlist(test)),nrow=nrow(test))
