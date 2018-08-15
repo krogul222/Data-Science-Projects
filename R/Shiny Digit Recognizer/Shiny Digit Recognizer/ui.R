@@ -6,11 +6,12 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
-      fileInput("upload", "Upload new image", accept = c('image/png', 'image/jpeg')),
+      textInput("imageLink", "Link to digit image:", "https://www.researchgate.net/profile/Jose_Sempere/publication/221258631/figure/fig1/AS:305526891139075@1449854695342/Handwritten-digit-2.png"),
       fluidRow(
         column(12, align="center",
-      actionButton("button", "Predict")
-      )),
+               actionButton("loadImage", "Load Image")
+        )),
+      # fileInput("upload", "Upload new image", accept = c('image/png', 'image/jpeg')),
       fluidRow(
         column(width = 6, offset = 0, style='padding:10px;')
       ),
@@ -18,6 +19,10 @@ ui <- fluidPage(
       column(12, align="center",
       textOutput("PredictedLabel"),
       textOutput("Predicted"),
+      fluidRow(
+        column(12, align="center",
+               actionButton("button", "Predict")
+        )),
       tags$head(tags$style("#Predicted{
             display: inline-block;
             width: 220px;
@@ -35,7 +40,8 @@ ui <- fluidPage(
             #button{
             display: inline-block;
             text-align: center;
-            }"))
+            }")),
+      textOutput("keepAlive")
       )
       )
       
