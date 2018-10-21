@@ -70,4 +70,4 @@ ui <- fluidPage(
      # imageOutput("img")
     )
   )
-)
+) 

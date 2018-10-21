@@ -104,4 +104,4 @@ server <- function(input, output, session) {
     })
     output$Predicted <- renderText("")  
   })
-}
+} 
